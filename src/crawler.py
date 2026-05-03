@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import time
 import json
-from indexer import Indexer
+from src.indexer import Indexer
 
 
 class Crawler:
@@ -31,6 +31,10 @@ class Crawler:
             # 4. Check if there is a next page to crawl
             if not next_page:
                 break
+            if next_page in self.visited_urls:
+                print(f"Already visited {next_page}, stopping to avoid loops.")
+                break
+            self.visited_urls.add(next_page)
                 
             # 5. MANDATORY: Politeness window 
             print(f"Waiting 6 seconds before next request...")
@@ -67,9 +71,11 @@ class Crawler:
     def extract_content(self, content):
         extracted_content = []
         
-        quotes = content.find_all("div", class_="quote")  # ✅ FIX
+        quotes = content.find_all("div", class_="quote") 
         
         for quote in quotes:
+            if not quote.find("span", class_="text") or not quote.find("small", class_="author"):
+                continue 
             extracted_content.append({
                 "text": quote.find("span", class_="text").get_text(),
                 "author": quote.find("small", class_="author").get_text(),
