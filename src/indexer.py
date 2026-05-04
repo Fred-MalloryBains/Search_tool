@@ -7,6 +7,7 @@ class Indexer:
         self.index = {}
 
     def add_to_index(self, page_id, text):
+        text = re.sub(r'[-–—]', ' ', text)  # Replace dashes with space
         clean = re.sub(r'[^\w\s]', '', text).lower()  # Remove punctuation
         words = clean.split()
         for position, word in enumerate(words):
@@ -25,41 +26,5 @@ class Indexer:
             json.dump(self.index, f)
 
 
-    def load_from_disk(self, filename):
-
-        try:
-            with open(filename, 'r') as f:
-                self.index = json.load(f)
-        except FileNotFoundError:
-            print(f"Error: Index file {filename} not found. Run 'build' first.")
     
-    def print_word(self, word):
-        """Prints the inverted index entry for a specific word."""
-        word = word.lower() # Case-insensitive requirement 
-        if word in self.index:
-            print(json.dumps(self.index[word], indent=4))
-        else:
-            print(f"Word '{word}' not found in index.")
-
-    def find_query(self, query_words):
-        """Returns pages containing the search terms."""
-        if not query_words:
-            return []
-
-        # Convert query to lowercase to match the index 
-        query_words = [w.lower() for w in query_words]
-        
-        # Start with pages containing the first word
-        if query_words not in self.index:
-            return []
-        
-        common_pages = set(self.index[query_words].keys())
-
-        # For multi-word queries, find the intersection of page sets
-        for word in query_words[1:]:
-            if word in self.index:
-                common_pages.intersection_update(self.index[word].keys())
-            else:
-                return []
-
-        return list(common_pages)
+    
