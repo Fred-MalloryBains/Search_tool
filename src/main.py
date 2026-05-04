@@ -12,7 +12,7 @@ def search(query):
     index = Index()
     try:
         index.load_from_disk()
-        results = index.search(query)
+        results = index.get_search_results(query)
     except Exception as e:
         print(f"An error occurred while searching: {e}")
         return
@@ -55,4 +55,5 @@ if __name__ == "__main__":
                 print("Usage: print <word>")
                 continue
             word = args[0]
+            print_index(word)
             
