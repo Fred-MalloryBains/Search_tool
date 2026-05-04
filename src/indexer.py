@@ -1,10 +1,15 @@
+import os 
+import json
+import re
 
 class Indexer:
     def __init__(self):
         self.index = {}
 
     def add_to_index(self, page_id, text):
-        words = text.split()
+        text = re.sub(r'[-–—]', ' ', text)  # Replace dashes with space
+        clean = re.sub(r'[^\w\s]', '', text).lower()  # Remove punctuation
+        words = clean.split()
         for position, word in enumerate(words):
             if word not in self.index:
                 self.index[word] = {}
@@ -12,5 +17,14 @@ class Indexer:
                 self.index[word][page_id] = {"frequency": 0, "positions": []}
             self.index[word][page_id]["frequency"] += 1
             self.index[word][page_id]["positions"].append(position)
+    
+    
+    def save_to_disk(self, filename):
+        # Ensure the directory exists (e.g., data/)
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
+        with open(filename, 'w') as f:
+            json.dump(self.index, f)
+
+
     
     

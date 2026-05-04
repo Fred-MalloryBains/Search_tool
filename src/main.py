@@ -1,4 +1,4 @@
-from crawler import Crawler
+from src.crawler import Crawler
 
 def build():
     print ("Starting the crawling and indexing process...")
