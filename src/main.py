@@ -1,4 +1,6 @@
+#from Search_tool.tests.test_crawler import crawler
 from src.crawler import Crawler
+from src.search import Index
 
 def build():
     print ("Starting the crawling and indexing process...")
@@ -6,6 +8,26 @@ def build():
     crawler = Crawler(base_url)
     crawler.build()
 
+def search(query):
+    index = Index()
+    try:
+        index.load_from_disk()
+        results = index.get_search_results(query)
+    except Exception as e:
+        print(f"An error occurred while searching: {e}")
+        return
+
+    if results:
+        index.display_results(results)
+        
+def print_index(word):
+    index = Index()
+    try:
+        index.load_from_disk()
+        index.print_index(word)
+    except Exception as e:
+        print(f"An error occurred while printing index: {e}")
+    
 
 if __name__ == "__main__":
     while True:
@@ -21,10 +43,17 @@ if __name__ == "__main__":
         
         if command == "find":
             search_query = " ".join(args)
-            
+            result = search(search_query)
         elif command == "load":
             pass
         
         elif command == "build":
             build()
+        
+        elif command == "print":
+            if not args:
+                print("Usage: print <word>")
+                continue
+            word = args[0]
+            print_index(word)
             

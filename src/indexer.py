@@ -3,8 +3,9 @@ import json
 import re
 
 class Indexer:
-    def __init__(self):
+    def __init__(self, filename="data/index.json"):
         self.index = {}
+        self.filename = filename
 
     def add_to_index(self, page_id, text):
         text = re.sub(r'[-–—]', ' ', text)  # Replace dashes with space
@@ -19,10 +20,10 @@ class Indexer:
             self.index[word][page_id]["positions"].append(position)
     
     
-    def save_to_disk(self, filename):
+    def save_to_disk(self):
         # Ensure the directory exists (e.g., data/)
-        os.makedirs(os.path.dirname(filename), exist_ok=True)
-        with open(filename, 'w') as f:
+        os.makedirs(os.path.dirname(self.filename), exist_ok=True)
+        with open(self.filename, 'w') as f:
             json.dump(self.index, f)
 
 
