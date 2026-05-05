@@ -3,20 +3,37 @@ import os
 import json
 from src.indexer import Indexer
 
+## Testing suite for the indexer component of the search tool
+
+""" 
+Creates a temporary file path for the index
+    and provides a fresh Indexer instance for each test.
+
+Returns:
+    _type_: test fixture for Indexer
+"""
+    
 @pytest.fixture
 def temp_index_file(tmp_path):
-    """Creates a temporary file path for the index."""
     d = tmp_path / "data"
     d.mkdir()
     return str(d / "test_index.json")
+
+"""
+Returns:
+    _type_: Indexer instance with a temporary file path for testing
+"""
 
 @pytest.fixture
 def indexer(temp_index_file):
     """Provides a fresh Indexer instance for each test."""
     return Indexer(filename=temp_index_file)
 
+
+"""
+Verifies frequency and positions are correctly recorded.
+"""
 def test_add_to_index_basic_stats(indexer):
-    """Verifies frequency and positions are correctly recorded."""
     indexer.add_to_index("url_1", "hello world hello")
     
     # 'hello' appears at index 0 and 2
@@ -26,8 +43,11 @@ def test_add_to_index_basic_stats(indexer):
     assert indexer.index["world"]["url_1"]["frequency"] == 1
     assert indexer.index["world"]["url_1"]["positions"] == [1]
 
+"""
+Tests if case is ignored and punctuation is stripped.
+"""
 def test_normalization_and_punctuation(indexer):
-    """Tests if case is ignored and punctuation is stripped."""
+    
     # Note: 'Self-aware' should become two words 'self' and 'aware' due to your dash regex
     indexer.add_to_index("url_1", "Self-aware! SELF-AWARE? self aware...")
     
@@ -40,8 +60,11 @@ def test_normalization_and_punctuation(indexer):
     assert "aware!" not in indexer.index
     assert "aware..." not in indexer.index
 
+"""
+Ensures words across different pages are indexed correctly.
+"""
 def test_multiple_pages(indexer):
-    """Ensures words across different pages are indexed correctly."""
+
     indexer.add_to_index("page_a", "apple banana")
     indexer.add_to_index("page_b", "apple cherry")
     
@@ -49,8 +72,11 @@ def test_multiple_pages(indexer):
     assert "page_b" in indexer.index["apple"]
     assert "page_b" not in indexer.index["banana"]
 
+"""
+Specifically tests the regex replacement for different types of dashes.
+"""
 def test_dash_replacement(indexer):
-    """Specifically tests the regex replacement for different types of dashes."""
+    
     # Using hypen, en-dash, and em-dash
     indexer.add_to_index("url_1", "word-word—word–word")
     
@@ -58,8 +84,10 @@ def test_dash_replacement(indexer):
     assert indexer.index["word"]["url_1"]["frequency"] == 4
     assert indexer.index["word"]["url_1"]["positions"] == [0, 1, 2, 3]
 
+"""
+Verifies that the index is correctly written to the filesystem.
+"""
 def test_save_to_disk(indexer, temp_index_file):
-    """Verifies that the index is correctly written to the filesystem."""
     indexer.add_to_index("url_1", "save test")
     indexer.save_to_disk()
     
@@ -69,8 +97,10 @@ def test_save_to_disk(indexer, temp_index_file):
         data = json.load(f)
         assert "save" in data
         assert data["save"]["url_1"]["frequency"] == 1
-
+        
+"""
+Edge case: adding an empty string should not crash or add keys.
+"""
 def test_empty_string(indexer):
-    """Edge case: adding an empty string should not crash or add keys."""
     indexer.add_to_index("url_1", "   ")
     assert len(indexer.index) == 0
