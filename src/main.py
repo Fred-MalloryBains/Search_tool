@@ -18,7 +18,7 @@ def search(query):
         return
 
     if results:
-        index.display_results(results)
+        index.display_results(results, query)
         
 def print_index(word):
     index = Index()

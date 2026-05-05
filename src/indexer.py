@@ -6,6 +6,7 @@ class Indexer:
     def __init__(self, filename="data/index.json"):
         self.index = {}
         self.filename = filename
+        self.total_pages = 0
 
     def add_to_index(self, page_id, text):
         text = re.sub(r'[-–—]', ' ', text)  # Replace dashes with space
