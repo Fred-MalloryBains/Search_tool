@@ -27,6 +27,14 @@ def print_index(word):
         index.print_index(word)
     except Exception as e:
         print(f"An error occurred while printing index: {e}")
+
+def load():
+    index = Index()
+    try:
+        index.load_from_disk()
+        print("Index loaded successfully.")
+    except Exception as e:
+        print(f"An error occurred while loading index: {e}")
     
 
 if __name__ == "__main__":
@@ -45,7 +53,7 @@ if __name__ == "__main__":
             search_query = " ".join(args)
             result = search(search_query)
         elif command == "load":
-            pass
+            load()
         
         elif command == "build":
             build()

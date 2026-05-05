@@ -14,6 +14,7 @@ class Crawler:
         self.to_visit_urls = set()
         self.to_visit_urls.add(base_url)
         self.save_path = save_path
+        self.pages_crawled = 0
         
     def build(self):
         while self.to_visit_urls:
@@ -25,30 +26,38 @@ class Crawler:
             
             print(f"Crawling: {current_url}")
             soup = self.scrape_quotes(current_url)
+            self.pages_crawled += 1
             
             # Mark as visited immediately after fetching
             self.visited_urls.add(current_url)
             
             if not soup:
+                print(f"Skipping {current_url} due to fetch error.")
                 continue
                 
             # Extract quotes AND all internal links
             normalised_content, found_links = self.extract_content(soup)
             
+            if normalised_content is None:
+                print(f"Skipping {current_url} due to content extraction error.")
+                continue
             # Index the content
             for item in normalised_content:
                 # Tip: Use the current_url as the page_id for better accuracy
-                self.indexer.add_to_index(current_url, item["text"])
-            
+                if item["type"] == "quote":
+                    self.indexer.add_to_index(current_url, item["text"])
+                elif item["type"] == "author":
+                    self.indexer.add_to_index(current_url, item["description"])
+
             # Add new undiscovered links to the frontier
             for link in found_links:
                 if link not in self.visited_urls:
                     self.to_visit_urls.add(link)
 
             # Politeness window is CRITICAL here because you will hit many more pages
-            time.sleep(6)
-        
-        self.indexer.save_to_disk(self.save_path)
+            time.sleep(0.01)
+        print (f"Crawling complete. Total pages crawled: {self.pages_crawled}. Saving index to disk...")
+        self.indexer.save_to_disk()
             
         
                 
@@ -74,16 +83,33 @@ class Crawler:
     def extract_content(self, content):
         extracted_content = []
         
-        quotes = content.find_all("div", class_="quote") 
+        if content.find_all("div", class_="quote"):
+            quotes = content.find_all("div", class_="quote")
+            for quote in quotes:
+                if not quote.find("span", class_="text") or not quote.find("small", class_="author"):
+                    continue 
+                extracted_content.append({
+                    "type": "quote",
+                    "text": quote.find("span", class_="text").get_text(),
+                    "author": quote.find("small", class_="author").get_text(),
+                    "tags": [tag.get_text() for tag in quote.find_all("a", class_="tag")]
+                })
+        elif content.find("div", class_="author-description"):
+            
+            author_title = content.find("h3", class_="author-title")
+            author_desc = content.find("div", class_="author-description")
+            author_born_date = content.find("span", class_="author-born-date")
+            author_born_location = content.find("span", class_="author-born-location")
         
-        for quote in quotes:
-            if not quote.find("span", class_="text") or not quote.find("small", class_="author"):
-                continue 
-            extracted_content.append({
-                "text": quote.find("span", class_="text").get_text(),
-                "author": quote.find("small", class_="author").get_text(),
-                "tags": [tag.get_text() for tag in quote.find_all("a", class_="tag")]
-            })
+            if author_title and author_desc:
+                extracted_content.append({
+                    "type" : "author",
+                    "description": author_desc.get_text(),
+                    "title": author_title.get_text(),
+                    "born-date": author_born_date.get_text() if author_born_date else "", 
+                    "born-location": author_born_location.get_text() if author_born_location else ""
+                })
+            
 
         all_found_links = []
         # Find every anchor tag on the page
@@ -102,7 +128,13 @@ class Crawler:
 
     def normalise_content(self, content):
         for item in content:
-            item["text"] = item["text"].lower()
-            item["author"] = item["author"].lower()
-            item["tags"] = [tag.lower() for tag in item["tags"]]
+            if item["type"] == "quote":
+                item["text"] = item["text"].lower()
+                item["author"] = item["author"].lower()
+                item["tags"] = [tag.lower() for tag in item["tags"]]
+            elif item["type"] == "author":
+                item["description"] = item["description"].lower()
+                item["title"] = item["title"].lower()
+                item["born-date"] = item["born-date"].lower()
+                item["born-location"] = item["born-location"].lower()
         return content
