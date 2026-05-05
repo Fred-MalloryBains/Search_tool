@@ -41,19 +41,20 @@ def test_extract_content_normalisation(crawler, soup):
 
 
 def test_next_page_exists(crawler, soup):
-    _, next_page = crawler.extract_content(soup)
+    _, next_pages = crawler.extract_content(soup)
 
-    assert next_page is not None
-    assert "page/2" in next_page
+    assert isinstance(next_pages, list)
+    assert next_pages is not None
+    assert any("page/2" in url for url in next_pages)
 
 
 def test_empty_page(crawler):
     empty_soup = BeautifulSoup("<html></html>", "html.parser")
 
-    content, next_page = crawler.extract_content(empty_soup)
+    content, next_pages = crawler.extract_content(empty_soup)
 
     assert content == []
-    assert next_page is None
+    assert next_pages == []
 
 
 def test_missing_fields(crawler):
@@ -119,15 +120,4 @@ def test_build_creates_index(tmp_path, mocker):
 
     crawler.indexer.save_to_disk.assert_called_once()
     
-
-def test_scrape_quotes_url_construction(mocker, crawler):
-    mock_response = mocker.Mock()
-    mock_response.status_code = 200
-    mock_response.text = "<html></html>"
-
-    mock_get = mocker.patch("requests.get", return_value=mock_response)
-
-    crawler.scrape_quotes(crawler.base_url, page=3)
-
-    assert "page/3" in mock_get.call_args[0][0]
     
