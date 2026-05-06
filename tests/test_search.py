@@ -40,7 +40,6 @@ def test_find_single_word(index):
     results = index.get_search_results("good")
     assert results == {"url_1", "url_2"}
     assert "url_3" not in results
-
 """
 Verifies the AND logic: only pages containing ALL words are returned.
 """
