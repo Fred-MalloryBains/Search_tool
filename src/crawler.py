@@ -1,3 +1,5 @@
+import re
+
 import requests
 from bs4 import BeautifulSoup
 import time
@@ -36,7 +38,7 @@ class Crawler:
                 continue
                 
             # Extract quotes AND all internal links
-            normalised_content, found_links = self.extract_content(soup)
+            normalised_content, found_links, fields = self.extract_content(soup)
             
             if normalised_content is None:
                 print(f"Skipping {current_url} due to content extraction error.")
@@ -45,9 +47,9 @@ class Crawler:
             for item in normalised_content:
                 # Tip: Use the current_url as the page_id for better accuracy
                 if item["type"] == "quote":
-                    self.indexer.add_to_index(current_url, item["text"])
+                    self.indexer.add_to_index(current_url, item["text"], fields)
                 elif item["type"] == "author":
-                    self.indexer.add_to_index(current_url, item["description"])
+                    self.indexer.add_to_index(current_url, item["description"], fields)
 
             # Add new undiscovered links to the frontier
             for link in found_links:
@@ -122,19 +124,46 @@ class Crawler:
             if full_url.startswith(self.base_url):
                 all_found_links.append(full_url)
 
-        normalised_content = self.normalise_content(extracted_content)
+        normalised_content, fields = self.normalise_content(extracted_content)
         # Return everything found
-        return normalised_content, all_found_links
+        return normalised_content, all_found_links, fields
 
     def normalise_content(self, content):
+        fields = set()
         for item in content:
             if item["type"] == "quote":
                 item["text"] = item["text"].lower()
                 item["author"] = item["author"].lower()
                 item["tags"] = [tag.lower() for tag in item["tags"]]
+                fields.update(item["tags"])
+                fields.add(item["author"])
             elif item["type"] == "author":
                 item["description"] = item["description"].lower()
                 item["title"] = item["title"].lower()
                 item["born-date"] = item["born-date"].lower()
                 item["born-location"] = item["born-location"].lower()
-        return content
+                fields.add(item["title"])
+                fields.add(item["born-date"])
+                fields.add(item["born-location"])
+        return content, self.parse_fields(fields)
+    
+    def parse_fields(self, fields):
+        tokenized_fields = set() # Use a set to avoid duplicates like 'miracle' vs 'miracles' if desired
+        
+        for field in fields:
+            # 1. Lowercase and handle special dashes
+            clean_field = field.lower()
+            clean_field = re.sub(r'[-–—]', ' ', clean_field) 
+            
+            # 2. Remove punctuation (like the dot in J.K. Rowling)
+            clean_field = re.sub(r'[^\w\s]', '', clean_field)
+            
+            # 3. Split into individual words
+            tokens = clean_field.split()
+            
+            # 4. Add each word to our collection
+            for token in tokens:
+                if token.strip():
+                    tokenized_fields.add(token)
+                    
+        return list(tokenized_fields)
