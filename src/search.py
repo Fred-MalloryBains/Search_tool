@@ -52,7 +52,7 @@ class Index:
             for word in query_words:
                 # Term frequency
                 tf = self.index.get(word, {}).get(page, {}).get("frequency", 0)
-                
+                field_tokens = self.index.get(word, {}).get(page, {}).get("fields", [])
                 # Get Document Frequency (DF)
                 # How many pages contain this specific word?
                 df = len(self.index.get(word, {}))
@@ -61,6 +61,10 @@ class Index:
                 # If the word isn't in the index, IDF is 0 to avoid division by zero
                 if df > 0 and self.total_docs > 0:
                     idf = math.log(self.total_docs / df)
+                    score = tf * idf
+                    
+                    if word in field_tokens:
+                        score *= 1.5 # Boost score if word is in a relevant field
                 else:
                     idf = 0
                 
@@ -73,8 +77,25 @@ class Index:
         ranked_results.sort(key=lambda x: x[1], reverse=True)
         return ranked_results
                 
-                    
-    
+    def calculate_phrase_bonus(self, page, query_words):
+        bonus = 0.0
+        # Only possible if there are at least 2 words
+        if len(query_words) < 2:
+            return bonus
+
+        # Get positions for all words in this page
+        pos_lists = [self.index.get(w, {}).get(page, {}).get("positions", []) for w in query_words]
+        
+        # Simple check: are words adjacent?
+        for i in range(len(pos_lists) - 1):
+            pos1 = pos_lists[i]
+            pos2 = pos_lists[i+1]
+            
+            for p1 in pos1:
+                if (p1 + 1) in pos2:
+                    bonus += 5.0 # High bonus for exact sequence
+        return bonus
+
     def display_results(self, results, query):
         ordered_results = self.calculate_relevance(results, query)
         if not ordered_results:
