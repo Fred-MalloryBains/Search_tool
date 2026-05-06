@@ -8,9 +8,7 @@ class Indexer:
         self.filename = filename
 
     def add_to_index(self, page_id, text, fields = None):
-        text = re.sub(r'[-–—]', ' ', text)  # Replace dashes with space
-        clean = re.sub(r'[^\w\s]', '', text).lower()  # Remove punctuation
-        words = clean.split()
+        words = self.tokenise(text)
         for position, word in enumerate(words):
             if word not in self.index:
                 self.index[word] = {}
@@ -28,3 +26,13 @@ class Indexer:
         with open(self.filename, 'w') as f:
             json.dump(self.index, f, indent=4)
     
+    """
+    Normalises and splits text into individual tokens.
+    Handles dashes, punctuation, and case sensitivity.
+    """
+    def tokenise(self, text):
+        # Replace dashes with space
+        text = re.sub(r'[-–—]', ' ', text)  
+        # Remove punctuation and lowercase
+        clean = re.sub(r'[^\w\s]', '', text).lower()  
+        return clean.split()

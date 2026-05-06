@@ -148,22 +148,13 @@ class Crawler:
         return content, self.parse_fields(fields)
     
     def parse_fields(self, fields):
-        tokenized_fields = set() # Use a set to avoid duplicates like 'miracle' vs 'miracles' if desired
-        
+        tokenised_fields = set() 
         for field in fields:
-            # 1. Lowercase and handle special dashes
-            clean_field = field.lower()
-            clean_field = re.sub(r'[-–—]', ' ', clean_field) 
+            # Use the helper function here
+            tokens = self.indexer.tokenise(field)
             
-            # 2. Remove punctuation (like the dot in J.K. Rowling)
-            clean_field = re.sub(r'[^\w\s]', '', clean_field)
-            
-            # 3. Split into individual words
-            tokens = clean_field.split()
-            
-            # 4. Add each word to our collection
+            # Add the resulting tokens to our set
             for token in tokens:
-                if token.strip():
-                    tokenized_fields.add(token)
+                tokenised_fields.add(token)
                     
-        return list(tokenized_fields)
+        return list(tokenised_fields)
