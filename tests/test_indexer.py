@@ -95,9 +95,9 @@ def test_save_to_disk(indexer, temp_index_file):
     
     with open(temp_index_file, 'r') as f:
         data = json.load(f)
-        assert "save" in data
-        assert data["save"]["url_1"]["frequency"] == 1
-        
+        assert "save" in data["index"]
+        assert data["index"]["save"]["url_1"]["frequency"] == 1
+
 """
 Edge case: adding an empty string should not crash or add keys.
 """
