@@ -5,13 +5,14 @@ class Index:
     def __init__(self, filename="data/index.json"):
         self.index = {}
         self.filename = filename
-        self.total_docs = 2000
+        self.total_docs = 0
     
     def load_from_disk(self):
 
         try:
             with open(self.filename, 'r') as f:
                 self.index = json.load(f)
+                self.total_docs = len(set(page for word_data in self.index.values() for page in word_data.keys()))
         except FileNotFoundError:
             print(f"Error: Index file {self.filename} not found. Run 'build' first.")
             
