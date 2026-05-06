@@ -7,7 +7,7 @@ class Indexer:
         self.index = {}
         self.filename = filename
 
-    def add_to_index(self, page_id, text, fields):
+    def add_to_index(self, page_id, text, fields = None):
         text = re.sub(r'[-–—]', ' ', text)  # Replace dashes with space
         clean = re.sub(r'[^\w\s]', '', text).lower()  # Remove punctuation
         words = clean.split()
@@ -16,7 +16,8 @@ class Indexer:
                 self.index[word] = {}
             if page_id not in self.index[word]:
                 self.index[word][page_id] = {"frequency": 0, "positions": []}
-            self.index[word][page_id]["fields"] = fields
+            if fields:
+                self.index[word][page_id]["fields"] = fields
             self.index[word][page_id]["frequency"] += 1
             self.index[word][page_id]["positions"].append(position)
     

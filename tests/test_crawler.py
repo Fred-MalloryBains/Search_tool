@@ -31,7 +31,7 @@ def soup(sample_html):
 Verify that the scraper can fetch and parse a page successfully.
 """
 def test_extract_content_basic(crawler, soup):
-    content, next_page = crawler.extract_content(soup)
+    content, next_page, _ = crawler.extract_content(soup)
 
     assert isinstance(content, list)
     assert len(content) > 0
@@ -46,7 +46,7 @@ def test_extract_content_basic(crawler, soup):
 tests that the scraper correctly identifies when there are no more pages to crawl.
 """
 def test_extract_content_normalisation(crawler, soup):
-    content, _ = crawler.extract_content(soup)
+    content, _, _ = crawler.extract_content(soup)
 
     first = content[0]
 
@@ -59,7 +59,7 @@ def test_extract_content_normalisation(crawler, soup):
 Verify that the scraper correctly identifies and returns the next page URL.
 """
 def test_next_page_exists(crawler, soup):
-    _, next_pages = crawler.extract_content(soup)
+    _, next_pages, _ = crawler.extract_content(soup)
 
     assert isinstance(next_pages, list)
     assert next_pages is not None
@@ -72,7 +72,7 @@ Verify that the scraper correctly identifies when there are no more pages to cra
 def test_empty_page(crawler):
     empty_soup = BeautifulSoup("<html></html>", "html.parser")
 
-    content, next_pages = crawler.extract_content(empty_soup)
+    content, next_pages, _ = crawler.extract_content(empty_soup)
 
     assert content == []
     assert next_pages == []
@@ -89,7 +89,7 @@ def test_missing_fields(crawler):
     soup = BeautifulSoup(html, "html.parser")
 
     # Should not crash
-    content, _ = crawler.extract_content(soup)
+    content, _, _ = crawler.extract_content(soup)
 
     assert isinstance(content, list)
 
