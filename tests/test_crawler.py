@@ -1,7 +1,8 @@
 import pytest
 from bs4 import BeautifulSoup
 from src.crawler import Crawler
-
+import requests
+import json
 
 """
 Returns: crawler instance for testing
@@ -151,3 +152,65 @@ def test_build_creates_index(tmp_path, mocker):
     crawler.build()
 
     crawler.indexer.save_to_disk.assert_called_once()
+
+"""
+Test handling fields tag
+"""
+
+def test_extract_content_tags(crawler):
+    html = """
+    <div class="quote">
+        <span class="text">Test quote</span>
+        <small class="author">Author</small>
+        <a class="tag">tag1</a>
+        <a class="tag">tag2</a>
+    </div>
+    """
+    soup = BeautifulSoup(html, "html.parser")
+
+    content, _, _ = crawler.extract_content(soup)
+
+    assert content[0]["tags"] == ["tag1", "tag2"]
+    
+
+def test_extract_author_content(crawler):
+    author_html = """
+    <h3 class="author-title">Albert Einstein</h3>
+    <span class="author-born-date">March 14, 1879</span>
+    <span class="author-born-location">in Ulm, Germany</span>
+    <div class="author-description">Great physicist.</div>
+    """
+    soup = BeautifulSoup(author_html, "html.parser")
+    content, links, fields = crawler.extract_content(soup)
+    
+    assert content[0]["type"] == "author"
+    assert content[0]["title"] == "albert einstein"
+    assert "ulm" in fields
+    
+
+def test_scrape_quotes_exception(mocker, crawler):
+    # This triggers the 'except' block, not just a 404 status
+    mocker.patch("requests.get", side_effect=requests.exceptions.ConnectionError())
+    
+    soup = crawler.scrape_quotes("http://broken-link.com")
+    assert soup is None
+    
+
+def test_build_skips_visited(mocker, crawler):
+    crawler.to_visit_urls = {"http://test.com"}
+    crawler.visited_urls = {"http://test.com"}
+    
+    # If the logic works, scrape_quotes should never be called
+    mock_scrape = mocker.patch.object(crawler, 'scrape_quotes')
+    crawler.build()
+    
+    mock_scrape.assert_not_called()
+    
+
+def test_link_filtering(crawler):
+    html = '<a href="http://google.com">External</a><a href="/page/1">Internal</a>'
+    soup = BeautifulSoup(html, "html.parser")
+    _, links, _ = crawler.extract_content(soup)
+    
+    assert "http://google.com" not in links
+    assert "http://quotes.toscrape.com/page/1" in links

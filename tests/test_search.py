@@ -30,6 +30,27 @@ def index(temp_index_file):
     search_tool.load_from_disk()
     return search_tool
 
+@pytest.fixture
+def search_with_metadata(tmp_path):
+    path = str(tmp_path / "meta_index.json")
+    data = {
+        "index": {
+            "apple": {
+                "url_1": {"frequency": 1, "positions": [0]},
+                "url_2": {"frequency": 5, "positions": [0, 10, 20, 30, 40]}
+            }
+        },
+        "metadata": {
+            "url_1": {"tags": ["apple", "fruit"]},
+            "url_2": {"tags": ["tech"]}
+        }
+    }
+    with open(path, 'w') as f:
+        json.dump(data, f)
+    
+    s = Index(filename=path)
+    s.load_from_disk()
+    return s
 
 # Tests for FIND (get_search_results)
 
@@ -116,3 +137,38 @@ def test_load_non_existent_file(capsys):
     assert "not found" in captured.out
 
 
+def test_metadata_boost(search_with_metadata):
+    # url_1 has frequency 1 but has "apple" in tags (1.5x boost)
+    # url_2 has frequency 5 but no tag boost.
+    search_with_metadata.total_docs = 10  # Set total_docs for IDF calculation
+    results = search_with_metadata.get_search_results("apple")
+    ranked = search_with_metadata.calculate_relevance(results, "apple")
+    # This ensures the ranking logic is actually executed
+    assert len(ranked) == 2
+    assert ranked[0][1] > 0
+    
+def test_phrase_bonus_logic(index):
+    # Setup index specifically for phrase testing
+    index.index["hot"] = {"url_x": {"frequency": 1, "positions": [10]}}
+    index.index["dog"] = {"url_x": {"frequency": 1, "positions": [11]}} # Adjacent
+    index.total_docs = 10
+    
+    results = {"url_x"}
+    ranked = index.calculate_relevance(results, "hot dog")
+    
+    # The score should be high because (10 + 1) == 11
+    assert ranked[0][0] == "url_x"
+    assert ranked[0][1] > 5.0 # Base bonus is 5.0
+    
+def test_display_results_integration(index, capsys):
+    results = {"url_1", "url_2"}
+    index.display_results(results, "good")
+    captured = capsys.readouterr()
+    
+    assert "Results found in 2 pages" in captured.out
+    assert "Score:" in captured.out
+    
+def test_display_no_results(index, capsys):
+    index.display_results(set(), "nothing")
+    captured = capsys.readouterr()
+    assert "No results found." in captured.out

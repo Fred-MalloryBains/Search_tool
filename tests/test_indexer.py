@@ -104,3 +104,17 @@ Edge case: adding an empty string should not crash or add keys.
 def test_empty_string(indexer):
     indexer.add_to_index("url_1", "   ")
     assert len(indexer.index) == 0
+    
+"""
+Edge case: adding a string with only punctuation should not crash or add keys.
+"""
+def test_only_punctuation(indexer):
+    indexer.add_to_index("url_1", "!!!???")
+    assert len(indexer.index) == 0
+
+"""
+Edge case: adding a string with dashes should split into separate words.
+"""
+def test_only_dashes(indexer):
+    indexer.add_to_index("url_1", "great-expectations")
+    assert len(indexer.index) == 2
