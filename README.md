@@ -85,3 +85,6 @@ search_tool/
 └── README.md           # Documentation[cite: 2]
 ```
 
+## Index structure
+
+Can be found here: [Index](docs/INDEX_INFO.md)
