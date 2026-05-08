@@ -25,15 +25,3 @@ src/search.py       86      1    99%
 TOTAL              297     7    96%
 ```
 Generated using `pytest-cov`
-
-## tests/crawler
-
-This code tests the crawler function, using mocking and etc 
-
-## tests/indexer 
-
-This code tests the tokenisation and storage of the index 
-
-## tests/search
-
-This code tests the searching etc

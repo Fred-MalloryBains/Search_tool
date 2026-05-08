@@ -109,7 +109,7 @@ def test_print_index_output(index, capsys):
     index.print_index("good")
     captured = capsys.readouterr()
     
-    # Check for keywords in your print logic
+    # Check for keywords in print logic
     assert "Word: 'good'" in captured.out
     assert "Page: url_1" in captured.out
     assert "Frequency: 1" in captured.out

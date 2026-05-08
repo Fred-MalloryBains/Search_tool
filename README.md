@@ -28,7 +28,7 @@ The project relies on the following libraries as recommended in **COMP3011_Cours
 ### Installation Steps
 1.  **Clone the repository**:
     ```bash
-    git clone [your-repository-url]
+    git clone [https://github.com/Fred-MalloryBains/Search_tool]
     cd fred-mallorybains/search_tool
     ```
 2.  **Install requirements**:

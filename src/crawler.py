@@ -56,8 +56,8 @@ class Crawler:
                 if link not in self.visited_urls:
                     self.to_visit_urls.add(link)
 
-            # Politeness window is CRITICAL here because you will hit many more pages
-            time.sleep(0.01)
+            # Politeness window is CRITICAL to hit many more pages
+            time.sleep(6)
         print (f"Crawling complete. Total pages crawled: {self.pages_crawled}. Saving index to disk...")
         self.indexer.save_to_disk()
             

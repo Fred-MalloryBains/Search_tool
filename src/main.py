@@ -93,6 +93,9 @@ if __name__ == "__main__":
             if not loaded_index:
                 print("Please load the index first using 'load' command.")
                 continue
+            if len(args) != 1:
+                print("Usage: print <word>")
+                continue
             word = args[0]
             print_index(word, index)
         else:

@@ -22,7 +22,7 @@ class Indexer:
         if fields:
                 if fields and page_id not in self.metadata:
                     self.metadata[page_id] = {
-                        "tags": fields  # You can further split this into author/tags if needed
+                        "tags": fields  
                     }
                 else:
                     existing_tags = self.metadata[page_id]["tags"]

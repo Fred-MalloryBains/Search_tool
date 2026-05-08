@@ -48,7 +48,7 @@ Tests if case is ignored and punctuation is stripped.
 """
 def test_normalization_and_punctuation(indexer):
     
-    # Note: 'Self-aware' should become two words 'self' and 'aware' due to your dash regex
+    # Note: 'Self-aware' should become two words 'self' and 'aware' due to dash regex
     indexer.add_to_index("url_1", "Self-aware! SELF-AWARE? self aware...")
     
     assert "self" in indexer.index
