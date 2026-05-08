@@ -2,32 +2,52 @@
 
 Below outlines the operations of searching through the indexing, using key techniques from search index querying, describing the implementation and complexity of each key function.
 
-## Getting relevant pages from find
+## Retrieval: Getting relevant pages from find
 
-To collate a set of page_urls from the index, an intersection operation is performed for each url found in `self.index[word].keys()`, this is handled in `def get_search_results(self, query):`. 
+To retrieve documents, the system identifies all pages containing the requested search terms. For multi-word queries, an intersection operation ensures that only pages containing all terms (AND logic) are returned.
 
-To iterate over each set of lists and find the intersection the complexity of this operation is: 
+- **Implementation**: handled in `get_search_results(self, query)`
+- **process**: 
 
-## Ordering the page results 
+    1. The system identifies sets of URLS from the text index and metadata tags for each word 
+    2. It performs a set union to combine text and metadata matches for individual words. 
+    3. It then calculates the intersection of these sets across all query terms
 
-From the set of pages, the ordering of the returned results is determined using a weighted TF-IDF algorithm. 
-Each word is tallied for every page to find the weighted prevelance compared to the total, to give a meaningful numeric representation of importance to the document, compared to ordering by raw frequency. 
-To consider meta data this process is repeated and tallied to the original, with more weight being added for words matching metadata compared to text body contents. This calcualtion is carried out using the method. 
+- **complexity**: $O(N \cdot M)$, Where $N$ is the number of words in the query and $M$ is the average number of pages per word in the index. 
 
-This is carried out in the method: `def get_search_results(self, query):` and has a complexity of:
+## Ranking: Ordering the Results
+
+Results are ordered using a sophisticated **TF-IDF (Term Frequency-Inverse Document Frequency)** algorithm combined with custom metadata weighting.
+
+### 1. **Weighted TF-IDF Scoring**
+
+Instead of raw frequency, we use TF-IDF to provide a numeric representation of a term's importance to a specific document relative to the entire corpus.
+
+- **Implementation**: Handled in `calculate_relevance(self, results, query)`.
+- **Metadata Boost**: Words found within a page's metadata tags receive a **1.5x score boost** prioritising categorised content.
+- **Complexity**: $O(R \cdot N)$ where $R$ is the number of retrieved results (pages) and N is the query words.
 
 
-To also consider prioritising proximity of the query, to penalise sparse matches and reward close ones, a bonus constant is added for each consecutive match for every word. This is carried out in `def calculate_phrase_bonus(self, page, query_words):
-And has a complexity of: 
+### 2. **Proximity and Phrase Bonus** 
+
+To reward documents where terms appear consecutively (indicating a phrase match), a bonus constant is added for every adjacent word pair.
+
+- **Implementation**: Handled in `calculate_phrase_bonus(self, page, query_words)`.
+- **Logic**: For every consecutive pair of query words, if their positions in the document are adjacent ($pos_2 = pos_1 + 1$), a bonus of $5.0$ is added to the total score.
+- **Complexity**: $O(N \cdot P^2)$, where $N$ is the number of query words and $P$ is the average number of positions per word in a document.
+
 
 
 ## Overall Complexity 
 
-In total the searching of terms has a complexity of: 
+The total complexity for a search operation is roughly:
 
+$O(N \cdot M + R \cdot N \cdot P^2)$. 
 
-And this is adequate for a moderate size search algorithm for this index size, but considerably larger indexs would require more efficient processing by splitting into different sections etc.
+- **Efficiency**: This is highly efficient for moderate size of P, the positions per word in a document.
+
+- **scalability**: for massive indices, further optimisations such as search result pruning or limiting or pre-calculated IDF values would improve performance.
 
 ### Testing 
 
-Testing outline and plan can be found here: [testing](./TESTING.md)
+Detailed testing logs and strategies can be found here: [testing](./TESTING.md)

@@ -20,7 +20,7 @@ The tool is specifically designed to work with [https://quotes.toscrape.com/](ht
 *   **pip** (Python package installer)
 
 ### Dependencies
-The project relies on the following libraries as recommended in **COMP3011_Coursework2_Brief__2025_2026.pdf**[cite: 2]:
+The project relies on the following libraries as recommended in **COMP3011_Coursework2_Brief__2025_2026.pdf**:
 *   `requests`: For composing HTTP requests to the target website.
 *   `beautifulsoup4`: For parsing HTML content and extracting text/links.
 *   `pytest`: For running the test suite.
@@ -69,20 +69,20 @@ Returns a list of all pages containing the specified query phrase or terms
 
 ```plaintext
 search_tool/
-├── src/                # Source code[cite: 1, 2]
+├── src/                # Source code
 │   ├── crawler.py      # Web crawling logic
 │   ├── indexer.py      # Inverted index creation
 │   ├── search.py       # Query processing and retrieval
 │   └── main.py         # CLI entry point
-├── tests/              # Test suite[cite: 1, 2]
+├── tests/              # Test suite
 │   ├── fixtures/       # Mock data for testing
 │   ├── test_crawler.py
 │   ├── test_indexer.py
 │   └── test_search.py
-├── data/               # Persistent storage[cite: 1, 2]
+├── data/               # Persistent storage
 │   └── index.json      # Compiled index file
-├── requirements.txt    # Project dependencies[cite: 2]
-└── README.md           # Documentation[cite: 2]
+├── requirements.txt    # Project dependencies
+└── README.md           # Documentation
 ```
 
 ## Index structure

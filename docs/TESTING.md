@@ -1,8 +1,19 @@
 # Testing 
 
-Testing was split across 3 distinct files using pytest to implement this. 
+Testing is implemented using `pytest` and `pytest-mock`, achieving 96% total code coverage across the core search pipeline.
 
-The code coverage of the tests was over 95% for each feature file: 
+## Testsuite Overview
+
+The suite is modularized into three distinct functional areas to ensure localized error detection:
+
+| Test File | Focus Area | Key Edge Cases Covered | 
+| --------- | ---------- | ---------------------- |  
+| test_crawler.py | HTML parsing & Link discovery | "Malformed HTML, 404 errors, and duplicate URL skipping   " | 
+| test_indexer.py | Text normalization & Storage | "Punctuation stripping, dash-handling, and empty string inputs   +1" |
+| test_search.py | Retrieval & Ranking | "Multi-word intersections, phrase bonuses, and case-insensitivity"|
+
+
+## Code coverage 
 
 ```bash 
 Name             Stmts   Miss  Cover
@@ -13,7 +24,7 @@ src/search.py       86      1    99%
 ------------------------------------
 TOTAL              297     7    96%
 ```
-Using pytest's coverage module
+Generated using `pytest-cov`
 
 ## tests/crawler
 

@@ -64,6 +64,7 @@ if __name__ == "__main__":
         if not user_input:
             continue
         
+        # parse the command and its arguments
         command = user_input[0]
         args = user_input[1:]
         
@@ -71,6 +72,7 @@ if __name__ == "__main__":
             print("Exiting search tool. Goodbye!")
             break
         
+        # switch case for the different commands
         if command == "find":
             if loaded_index:
                 search_query = " ".join(args)

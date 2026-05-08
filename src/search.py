@@ -2,23 +2,36 @@ import json
 import math
 
 class Index: 
+    """
+    Class implementation of the search index, responsible for loading the index from disk,
+    searching for queries, calculating relevance scores, and printing index details.
+    """
     def __init__(self, filename="data/index.json"):
         self.index = {}
         self.metadata = {}
         self.filename = filename
         self.total_docs = 0
     
+    """
+    Defensive loading of the index from disk, with error handling for missing files.
+    """
     def load_from_disk(self):
 
         try:
             with open(self.filename, 'r') as f:
                 data = json.load(f)
+                # create two separate dictionaries for text index and metadata for easier access
                 self.index = data.get("index", {})
                 self.metadata = data.get("metadata", {})
+                # store total_docs for relevance calculations (DF and IDF)
                 self.total_docs = len(set(page for word_data in self.index.values() for page in word_data.keys()))
         except FileNotFoundError:
             print(f"Error: Index file {self.filename} not found. Run 'build' first.")
-            
+    
+    """
+    Retrieves a set of pages that match the query, 
+    Using the set intersect function to ensure all query words are present in the results.
+    """
     def get_search_results(self, query):
         query_words = query.lower().split()
         if not query_words:
@@ -48,6 +61,10 @@ class Index:
 
         return intersection_pages if intersection_pages else set()
 
+    """
+    Weighted relevance calculation that considers term frequency, inverse document frequency,
+    and applies a boost for metadata matches. Also includes a bonus for exact phrase matches.
+    """
     def calculate_relevance(self, results, query):
         query_words = query.lower().split()
         ranked_results = []
@@ -84,14 +101,21 @@ class Index:
 
         ranked_results.sort(key=lambda x: x[1], reverse=True)
         return ranked_results
-                
+    
+    """
+    Apply a bonus to the relevance score if the query words appear as an exact phrase in the page content.
+    This encourages results where the query is more likely to be contextually relevant.
+    """
     def calculate_phrase_bonus(self, page, query_words):
         bonus = 0.0
+        # check if there exists multiple query words
         if len(query_words) < 2:
             return bonus
 
+        # Get the positions of each query word in the page content
         pos_lists = [self.index.get(w, {}).get(page, {}).get("positions", []) for w in query_words]
         
+        # check for consecutive positions of query words to identify exact phrase matches
         for i in range(len(pos_lists) - 1):
             pos1 = pos_lists[i]
             pos2 = pos_lists[i+1]
@@ -101,6 +125,9 @@ class Index:
                     bonus += 5.0
         return bonus
 
+    """
+    Format and print the search results, showing the number of pages found and their relevance scores.
+    """
     def display_results(self, results, query):
         ordered_results = self.calculate_relevance(results, query)
         if not ordered_results:
@@ -111,7 +138,9 @@ class Index:
         for page, score in ordered_results:
             print(f" - {page} (Score: {score:.2f})")
         
-        
+    """
+    Implementation of the print function for a specific word, showing its frequency and positions in the indexed pages.
+    """   
     def print_index(self, word):
         word = word.lower()
         if word in self.index:

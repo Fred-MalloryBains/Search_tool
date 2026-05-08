@@ -6,39 +6,22 @@ The index stores the required text from the quotes and author descriptions, as w
 
 The saved data is stored in a single file as specified in the coursework instructions, the dictionary structure of the saved json is as follows:
 
-```bash
+```json
 {
-    {
-        "index":
-            {
-                "word1": 
-                {
-                    "<url1>": 
-                    { 
-                        "frequency" :
-                        {
-                            3
-                        }
-                        "positions" : 
-                        {
-                            [0, 10, 12]
-                        }
-                    }
-                }
-            }
+  "index": {
+    "world": {
+      "[http://quotes.toscrape.com/page/1/](http://quotes.toscrape.com/page/1/)": {
+        "frequency": 1,
+        "positions":
+      }
     }
-    {
-        "metata" :
-            {
-                "url1" :
-                {
-                    ['tag1', 'tag2', 'tag3', 'author']
-                }
-            }
+  },
+  "metadata": {
+    "[http://quotes.toscrape.com/page/1/](http://quotes.toscrape.com/page/1/)": {
+      "tags": ["albert einstein", "change", "deep-thoughts"]
     }
+  }
 }
-
-```
 
 ## Accessing the index
 
