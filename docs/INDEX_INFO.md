@@ -22,6 +22,7 @@ The saved data is stored in a single file as specified in the coursework instruc
     }
   }
 }
+```
 
 ## Accessing the index
 
